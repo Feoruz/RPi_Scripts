@@ -2,10 +2,11 @@ import RPi.GPIO
 import time
 import matplotlib.pyplot as plot
 
-dac = [10, 9, 11, 5, 6, 13, 19, 26]
+dac = [26, 19, 13, 6, 5, 11, 9, 10]
 leds = [24, 25, 8, 7, 12, 16, 20, 21]
 comp = 4
 troyka = 17
+st = 0.005
 RPi.GPIO.setmode(RPi.GPIO.BCM)
 RPi.GPIO.setup(dac, RPi.GPIO.OUT)
 RPi.GPIO.setup(leds, RPi.GPIO.OUT)
@@ -21,7 +22,7 @@ def adc():
     for i in range(8):
         j[i] = 1
         RPi.GPIO.output(dac, j)
-        time.sleep(0.001)
+        time.sleep(st)
         if RPi.GPIO.input(comp) == 0:
             j[i] = 0
         RPi.GPIO.output(leds, j)
@@ -36,6 +37,7 @@ try:
         p = adc()
         if p<3.2:
             meas.append(p)
+            print(p)
         else:
             break
     RPi.GPIO.output(troyka, 0)
@@ -43,6 +45,7 @@ try:
         p = adc()
         if p>0.066:
             meas.append(p)
+            print(p)
         else:
             break
     t1 = time.time()
@@ -50,12 +53,16 @@ try:
     plot.plot(meas)
     plot.show()
     with open("data.txt", "w") as out:
-        out.write("/n".join([str(i) for i in meas]))
+        out.write("\n".join([str(i) for i in meas]))
         freq = t01 / len(meas)
         step = 3.3 / 256
-        print(t01, freq, 100, step)
+        fr = 1 / st
+        print(t01)
+        print(freq)
+        print(st)
+        print(step)
     with open("settings.txt", "w") as sets:
-        sets.write(str(100)+'/n'+str(step))
+        sets.write(str(st)+'\n'+str(step))
 finally:
     RPi.GPIO.output(dac, 0)
     RPi.GPIO.output(troyka, 0)
